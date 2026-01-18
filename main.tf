@@ -166,8 +166,9 @@ resource "aws_cloudwatch_log_group" "ecs" {
 data "aws_iam_policy_document" "ecs_task_assume" {
   statement {
     actions = ["sts:AssumeRole"]
+
     principals {
-      type        = "services"
+      type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
@@ -183,6 +184,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# ECS Task Definition (port 80)
 resource "aws_ecs_task_definition" "kadai_task" {
   family                   = "kadai-task"
   network_mode             = "awsvpc"
