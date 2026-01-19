@@ -184,7 +184,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# ECS Task Definition (port 80)
+# ECS Task Definition (dev)
 resource "aws_ecs_task_definition" "kadai_task" {
   family                   = "kadai-task"
   network_mode             = "awsvpc"
@@ -212,7 +212,37 @@ resource "aws_ecs_task_definition" "kadai_task" {
   ])
 }
 
-#ECS Service
+# ECS Task Definition (prod)
+resource "aws_ecs_task_definition" "kadai_task_prod" {
+  family                   = "kadai-prod-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name  = "app"
+      image = "nginx:latest"
+      portMappings = [
+        { containerPort = 80, hostPort = 80, protocol = "tcp" }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.ecs.name
+          awslogs-region        = "ap-northeast-1"
+          awslogs-stream-prefix = "prod" # ←devと分ける
+        }
+      }
+    }
+  ])
+}
+
+
+#ECS Service(dev)
+
 resource "aws_ecs_service" "dev" {
   name            = "kadai-dev-svc"
   cluster         = aws_ecs_cluster.kadai_cluster.id
@@ -241,6 +271,43 @@ resource "aws_appautoscaling_policy" "dev_cpu" {
   resource_id        = aws_appautoscaling_target.dev.resource_id
   scalable_dimension = aws_appautoscaling_target.dev.scalable_dimension
   service_namespace  = aws_appautoscaling_target.dev.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 50
+  }
+}
+#ECS Service(prod)
+resource "aws_ecs_service" "prod" {
+  name            = "kadai-prod-svc"
+  cluster         = aws_ecs_cluster.kadai_cluster.id
+  task_definition = aws_ecs_task_definition.kadai_task_prod.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = [aws_subnet.kadai_private_a.id, aws_subnet.kadai_private_c.id]
+    security_groups  = [aws_security_group.ecs_sg.id]
+    assign_public_ip = false
+  }
+}
+
+resource "aws_appautoscaling_target" "prod" {
+  max_capacity       = 4
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.kadai_cluster.name}/${aws_ecs_service.prod.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "prod_cpu" {
+  name               = "kadai-prod-cpu-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.prod.resource_id
+  scalable_dimension = aws_appautoscaling_target.prod.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.prod.service_namespace
 
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
