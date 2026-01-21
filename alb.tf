@@ -6,10 +6,10 @@ resource "aws_lb" "kadai_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [
+  subnets = [
     aws_subnet.kadai_public_a.id,
     aws_subnet.kadai_public_c.id
-    ]
+  ]
 
   enable_deletion_protection = false
 }
@@ -65,39 +65,6 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-#以下chatGPT追加分
-# ALB Listener Rules
 
-resource "aws_lb_listener_rule" "prod_host" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 10
-
-  condition {
-    host_header {
-      values = ["example.com"]
-    }
-  }
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.prod.arn
-  }
-}
-
-resource "aws_lb_listener_rule" "dev_host" {
-  listener_arn = aws_lb_listener.http.arn
-  priority     = 20
-
-  condition {
-    host_header {
-      values = ["dev.example.com"]
-    }
-  }
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.dev.arn
-  }
-}
 #ECSの方にアタッチメント文が必要？
 # ALB Target Group Attachments

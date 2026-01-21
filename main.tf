@@ -267,6 +267,15 @@ resource "aws_ecs_service" "dev" {
     security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = false
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.dev.arn
+    container_name   = "app"
+    container_port   = 80
+  }
+
+  depends_on = [aws_lb_listener.http]
+
 }
 
 resource "aws_appautoscaling_target" "dev" {
@@ -291,12 +300,13 @@ resource "aws_appautoscaling_policy" "dev_cpu" {
     target_value = 50
   }
 }
+
 #ECS Service(prod)
 resource "aws_ecs_service" "prod" {
   name            = "kadai-prod-svc"
   cluster         = aws_ecs_cluster.kadai_cluster.id
   task_definition = aws_ecs_task_definition.kadai_task_prod.arn
-  desired_count   = 1
+  desired_count   = 0
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -304,6 +314,8 @@ resource "aws_ecs_service" "prod" {
     security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = false
   }
+
+  depends_on = [aws_lb_listener.http]
 }
 
 resource "aws_appautoscaling_target" "prod" {
