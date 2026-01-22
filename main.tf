@@ -2,6 +2,13 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
+#CloudFrontとWAF用リージョン
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+
 #RDS's variables
 variable "db_username" {
   type      = string

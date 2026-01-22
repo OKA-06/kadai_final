@@ -1,63 +1,57 @@
 # CloudFront
 
-resource "aws_cloudfront_distribution" "dev" {
-  enabled             = true
-  is_ipv6_enabled     = true
-  comment             = "kadai dev distribution"
-  price_class = "PriceClass_All"
-  default_root_object = "index.html"#<--要確認
+variable "acm_cert_arn_us_east_1" {
+  type = string
+}
+
+resource "aws_cloudfront_distribution" "main" {
+  provider        = aws.us_east_1
+  enabled         = true
+  is_ipv6_enabled = true
+  comment         = "kadai main distribution"
+  price_class     = "PriceClass_All"
 
   origin {
     domain_name = aws_lb.kadai_alb.dns_name
-    origin_id   = "aws_lb.alb.name"
+    origin_id   = "alb-origin"
 
     custom_origin_config {
-      origin_protocol_policy = "match-viewer"
-      origin_ssl_protocols = ["TLSv1.2", "TLSv1.1", "TLSv1"]
-      http_port = 80
-      https_port = 443
-  } 
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+      http_port              = 80
+      https_port             = 443
+    }
   }
-    default_cache_behavior {
-        allowed_methods  = ["GET", "HEAD", ]
-        cached_methods   = ["GET", "HEAD"]
-        
-        forwarded_values {
-        query_string = true
-        cookies {
-            forward = "all"
-        }
-      }
-        target_origin_id = "aws_lb.alb.name"
-        viewer_protocol_policy = "redirect-to-https"
-        min_ttl                = 0
-        default_ttl            = 00
-        max_ttl                = 00
-    }
-    restrictions {
-        geo_restriction {
-        restriction_type = "none"
-        }
-    }
-    aliases = ["dev.kadai.com"]
-    #実際は後からRoute53の設定も入れておく。ドメイン名は仮
+  default_cache_behavior {
+    allowed_methods = ["GET", "HEAD", ]
+    cached_methods  = ["GET", "HEAD"]
 
-    viewer_certificate {
-        acm_certificate_arn = aws_acm_certificate.dev.arn
-        #↑ACL証明書を指定、バージニアリージョンのやつ
-        ssl_support_method  = "sni-only"
-        minimum_protocol_version = "TLSv1.2_2021"
-    }
-} 
-#Route53の設定
-resource "aws_route53_record" "route53_cloudfront_dev" {
-      zone_id = aws_route53_zone.kadai_zone.zone_id
-      name    = "dev.kadai.com"
-      type    = "A"
-    
-      alias {
-        name                   = aws_cloudfront_distribution.dev.domain_name
-        zone_id                = aws_cloudfront_distribution.dev.hosted_zone_id
-        evaluate_target_health = false
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
       }
     }
+    target_origin_id       = "alb-origin"
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 0
+    max_ttl                = 0
+  }
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+  aliases = [
+    "cnnagoya.com",
+  "dev.cnnagoya.com"]
+
+  viewer_certificate {
+    acm_certificate_arn      = var.acm_cert_arn_us_east_1
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+}
+
+#ホストゾーン参照してくる
