@@ -10,6 +10,7 @@ resource "aws_cloudfront_distribution" "main" {
   is_ipv6_enabled = true
   comment         = "kadai main distribution"
   price_class     = "PriceClass_All"
+  web_acl_id      = aws_wafv2_web_acl.prod.arn
 
   origin {
     domain_name = aws_lb.kadai_alb.dns_name
