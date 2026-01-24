@@ -8,10 +8,12 @@ phases:
       - export CONTAINER_NAME=${CONTAINER_NAME:-app}
 
   build:
-    commands:
-      - echo Building Docker image...
-      - docker build -t "$CONTAINER_NAME" .
-      - docker tag "$CONTAINER_NAME:latest" "$REPOSITORY_URI:latest"
+  commands:
+    - echo Building Docker image...
+    - cd laravel-nagoyameshi
+    - docker build -f ../Dockerfile.deployment -t "$CONTAINER_NAME" .
+    - docker tag "$CONTAINER_NAME:latest" "$REPOSITORY_URI:latest"
+
 
   post_build:
     commands:
