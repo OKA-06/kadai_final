@@ -15,3 +15,10 @@ phases:
     commands:
       - echo "[POST_BUILD] Pushing Docker image to ECR..."
       - docker push ${REPOSITORY_URI}:latest
+
+      - echo "[POST_BUILD] Writing imagedefinitions.json..."
+      - printf '[{"name":"app","imageUri":"%s:latest"}]' "$REPOSITORY_URI" > imagedefinitions.json
+      
+artifacts:
+  files:
+    - imagedefinitions.json
