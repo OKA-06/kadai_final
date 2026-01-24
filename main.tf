@@ -328,6 +328,25 @@ resource "aws_appautoscaling_policy" "dev_cpu" {
   }
 }
 
+#CloudWatch Alarm for ECS dev CPU High
+resource "aws_cloudwatch_metric_alarm" "ecs_dev_cpu_high" {
+  alarm_name          = "kadai-dev-ecs-cpu-high"
+  alarm_description   = "ECS dev service CPU >= 45%"
+  namespace           = "AWS/ECS"
+  metric_name         = "CPUUtilization"
+  statistic           = "Average"
+  period              = 60
+  evaluation_periods  = 2
+  threshold           = 45
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.kadai_cluster.name
+    ServiceName = aws_ecs_service.dev.name
+  }
+}
+
 #ECS Service(prod)
 resource "aws_ecs_service" "prod" {
   name            = "kadai-prod-svc"
