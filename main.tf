@@ -1,3 +1,14 @@
+#S3
+terraform {
+  backend "s3" {
+    bucket         = "kadai-final-oka06-state"
+    key            = "kadai/terraform.tfstate"
+    region         = "ap-northeast-1"
+    encrypt        = true
+  }
+}
+
+
 provider "aws" {
   region = "ap-northeast-1"
 }
