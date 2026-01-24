@@ -1,10 +1,10 @@
 #S3
 terraform {
   backend "s3" {
-    bucket         = "kadai-final-oka06-state"
-    key            = "kadai/terraform.tfstate"
-    region         = "ap-northeast-1"
-    encrypt        = true
+    bucket  = "kadai-final-oka06-state"
+    key     = "kadai/terraform.tfstate"
+    region  = "ap-northeast-1"
+    encrypt = true
   }
 }
 
@@ -214,26 +214,34 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+
+
 # ECS Task Definition (dev)
 resource "aws_ecs_task_definition" "kadai_task" {
   family                   = "kadai-task"
-  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
-      name  = "app"
-      image = "nginx:latest"
+      name      = "app"
+      image     = "${aws_ecr_repository.nagoyameshi.repository_url}:latest"
+      essential = true
+
       portMappings = [
-        { containerPort = 80, hostPort = 80, protocol = "tcp" }
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
       ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = aws_cloudwatch_log_group.ecs.name
+          awslogs-group         = "/ecs/kadai"
           awslogs-region        = "ap-northeast-1"
           awslogs-stream-prefix = "app"
         }
@@ -241,6 +249,7 @@ resource "aws_ecs_task_definition" "kadai_task" {
     }
   ])
 }
+
 
 # ECS Task Definition (prod)
 resource "aws_ecs_task_definition" "kadai_task_prod" {
