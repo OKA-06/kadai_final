@@ -24,7 +24,7 @@ resource "aws_lb_target_group" "dev" {
   vpc_id      = aws_vpc.kadai_vpc.id
 
   health_check {
-    path                = "/"
+    path                = "/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -42,7 +42,7 @@ resource "aws_lb_target_group" "prod" {
   vpc_id      = aws_vpc.kadai_vpc.id
 
   health_check {
-    path                = "/"
+    path                = "/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
