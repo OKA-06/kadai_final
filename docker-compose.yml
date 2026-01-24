@@ -1,0 +1,40 @@
+services:
+  laravel:
+    build: .
+    volumes:
+      - ./laravel-nagoyameshi:/app
+      - ./php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - "80:80"
+    depends_on:
+      node:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+
+  node:
+    image: node:21.6
+    working_dir: /app
+    volumes:
+      - ./laravel-nagoyameshi:/app
+    command: npm install
+    
+  db:
+    image: mysql:8.3
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=laravel_nagoyameshi
+      - MYSQL_USER=laravel
+      - MYSQL_PASSWORD=password
+    volumes:
+      - ./laravel-nagoyameshi/sql/init:/docker-entrypoint-initdb.d
+      - ./laravel-nagoyameshi/sql/data:/var/lib/mysql
+      - ./laravel-nagoyameshi/sql/conf.d:/etc/mysql/conf.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p $$MYSQL_ROOT_PASSWORD" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
