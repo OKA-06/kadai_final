@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "[PRE_BUILD] Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${REPOSITORY_URI}
+
+  build:
+    commands:
+      - echo "[BUILD] Building Laravel Docker image..."
+      - docker build --no-cache -f Dockerfile.deployment -t ${CONTAINER_NAME} .
+      - docker tag ${CONTAINER_NAME} ${REPOSITORY_URI}:latest
+
+  post_build:
+    commands:
+      - echo "[POST_BUILD] Running Laravel migration via ECS RunTask..."
+      - |
+        aws ecs run-task \
+          --cluster ${ECS_CLUSTER_NAME} \
+          --launch-type FARGATE \
+          --task-definition ${MIGRATION_TASK_DEFINITION} \
+          --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_ID_1},${SUBNET_ID_2}],securityGroups=[${SECURITY_GROUP_ID}],assignPublicIp=DISABLED}" \
+          --region ap-northeast-1
+
+      - echo "[POST_BUILD] Writing imagedefinitions.json for ECS Deploy..."
+      - printf '[{"name":"%s","imageUri":"%s:latest"}]' "$CONTAINER_NAME" "$REPOSITORY_URI" > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
