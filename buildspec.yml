@@ -19,15 +19,15 @@ phases:
       - echo "[POST_BUILD] Running Laravel migration via ECS RunTask..."
       - |
         aws ecs run-task \
-          --cluster kadai-cluster \
+          --cluster ${ECS_CLUSTER_NAME} \
           --launch-type FARGATE \
           --task-definition ${MIGRATION_TASK_DEFINITION} \
-          --overrides '{"containerOverrides":[{"name":"app","command":["sh","-c","php artisan migrate --force"]}]}' \
+          --overrides '{"containerOverrides":[{"name":"app","command":["sh","-c","php artisan migrate --force && php artisan init:db"]}]}' \
           --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_ID_1},${SUBNET_ID_2}],securityGroups=[${SECURITY_GROUP_ID}],assignPublicIp=DISABLED}" \
           --region ap-northeast-1
 
       - echo "[POST_BUILD] Writing imagedefinitions.json for ECS Deploy..."
-      - printf '[{"name":"app","imageUri":"%s:latest"}]' "${REPOSITORY_URI}" > imagedefinitions.json
+      - printf '[{"name":"app","imageUri":"%s:latest"}]' "$REPOSITORY_URI" > imagedefinitions.json
 
 artifacts:
   files:
