@@ -24,7 +24,7 @@ resource "aws_lb_target_group" "dev" {
   vpc_id      = aws_vpc.kadai_vpc.id
 
   health_check {
-    path                = "/health"
+    path                = "/"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -42,7 +42,7 @@ resource "aws_lb_target_group" "prod" {
   vpc_id      = aws_vpc.kadai_vpc.id
 
   health_check {
-    path                = "/health"
+    path                = "/"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
@@ -65,6 +65,22 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+#Listenersのルール設定
+resource "aws_lb_listener_rule" "prod_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 10
+
+  condition {
+    host_header {
+      values = ["cnnagoya.com"]
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.prod.arn
+  }
+}
 
 #ECSの方にアタッチメント文が必要？
 # ALB Target Group Attachments

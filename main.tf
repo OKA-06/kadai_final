@@ -352,7 +352,7 @@ resource "aws_ecs_service" "prod" {
   name            = "kadai-prod-svc"
   cluster         = aws_ecs_cluster.kadai_cluster.id
   task_definition = aws_ecs_task_definition.kadai_task_prod.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -361,8 +361,14 @@ resource "aws_ecs_service" "prod" {
     assign_public_ip = false
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.prod.arn
+    container_name   = "app"
+    container_port   = 80
+  }
   depends_on = [aws_lb_listener.http]
 }
+
 
 resource "aws_appautoscaling_target" "prod" {
   max_capacity       = 4

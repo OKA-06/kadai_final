@@ -8,7 +8,7 @@ resource "aws_wafv2_ip_set" "office_ipv4" {
   ip_address_version = "IPV4"
 
   addresses = [
-    "192.168.56.1/32",
+    "123.225.9.14/32",
   ]
 }
 

@@ -29,10 +29,14 @@ resource "aws_cloudfront_distribution" "main" {
 
     forwarded_values {
       query_string = false
+
+      headers = ["Host"]
+
       cookies {
         forward = "none"
       }
     }
+
     target_origin_id       = "alb-origin"
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
