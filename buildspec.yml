@@ -10,8 +10,7 @@ phases:
   build:
     commands:
       - echo Building Docker image...
-      - cd laravel-nagoyameshi
-      - docker build -f ../Dockerfile.deployment -t "$CONTAINER_NAME" .
+      - docker build -f Dockerfile.deployment -t "$CONTAINER_NAME" .
       - docker tag "$CONTAINER_NAME:latest" "$REPOSITORY_URI:latest"
 
   post_build:
@@ -23,4 +22,4 @@ phases:
 
 artifacts:
   files:
-    - laravel-nagoyameshi/imagedefinitions.json
+    - imagedefinitions.json
