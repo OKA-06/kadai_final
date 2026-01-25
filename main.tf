@@ -307,7 +307,7 @@ resource "aws_ecs_service" "dev" {
 
 resource "aws_appautoscaling_target" "dev" {
   max_capacity       = 4
-  min_capacity       = 1
+  min_capacity       = 2
   resource_id        = "service/${aws_ecs_cluster.kadai_cluster.name}/${aws_ecs_service.dev.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -372,7 +372,7 @@ resource "aws_ecs_service" "prod" {
 
 resource "aws_appautoscaling_target" "prod" {
   max_capacity       = 4
-  min_capacity       = 1
+  min_capacity       = 2
   resource_id        = "service/${aws_ecs_cluster.kadai_cluster.name}/${aws_ecs_service.prod.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -437,11 +437,11 @@ resource "aws_db_instance" "dev" {
   username = var.db_username
   password = var.db_password
 
-  db_subnet_group_name   = aws_db_subnet_group.kadai.name
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  publicly_accessible    = false
-  multi_az               = true
-
+  db_subnet_group_name    = aws_db_subnet_group.kadai.name
+  vpc_security_group_ids  = [aws_security_group.rds_sg.id]
+  publicly_accessible     = false
+  multi_az                = true
+  apply_immediately       = true
   backup_retention_period = 7
   backup_window           = "18:00-19:00"
   maintenance_window      = "sun:19:00-sun:20:00"
