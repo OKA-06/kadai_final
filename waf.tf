@@ -16,7 +16,7 @@ resource "aws_wafv2_ip_set" "office_ipv4" {
 resource "aws_wafv2_web_acl" "dev" {
   provider    = aws.us_east_1
   name        = "kadai-dev-web-acl"
-  description = "DEV Web ACL for CloudFront distribution"
+  description = "DEV Web ACL - Allow only my IP"
   scope       = "CLOUDFRONT"
 
   default_action {
@@ -24,7 +24,7 @@ resource "aws_wafv2_web_acl" "dev" {
   }
 
   rule {
-    name     = "AllowOfficeIPs"
+    name     = "AllowMyOfficeIPs"
     priority = 0
 
     action {
