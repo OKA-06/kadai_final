@@ -286,7 +286,7 @@ resource "aws_ecs_service" "dev" {
   name            = "kadai-dev-svc"
   cluster         = aws_ecs_cluster.kadai_cluster.id
   task_definition = aws_ecs_task_definition.kadai_task.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -352,7 +352,7 @@ resource "aws_ecs_service" "prod" {
   name            = "kadai-prod-svc"
   cluster         = aws_ecs_cluster.kadai_cluster.id
   task_definition = aws_ecs_task_definition.kadai_task_prod.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
