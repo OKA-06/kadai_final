@@ -7,7 +7,7 @@ variable "acm_cert_arn_us_east_1" {
 resource "aws_cloudfront_distribution" "main" {
   provider        = aws.us_east_1
   enabled         = true
-  is_ipv6_enabled = true
+  is_ipv6_enabled = false
   comment         = "kadai main distribution"
   price_class     = "PriceClass_All"
   web_acl_id      = aws_wafv2_web_acl.prod.arn

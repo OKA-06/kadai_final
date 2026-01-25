@@ -263,7 +263,7 @@ resource "aws_ecs_task_definition" "kadai_task_prod" {
   container_definitions = jsonencode([
     {
       name  = "app"
-      image = "nginx:latest"
+      image = "${aws_ecr_repository.nagoyameshi.repository_url}:latest"
       portMappings = [
         { containerPort = 80, hostPort = 80, protocol = "tcp" }
       ]
