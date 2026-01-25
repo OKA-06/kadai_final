@@ -1,3 +1,9 @@
+#CloudFrontとWAF用リージョン
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 # CloudFront
 
 variable "acm_cert_arn_us_east_1" {
