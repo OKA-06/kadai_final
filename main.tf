@@ -440,7 +440,7 @@ resource "aws_db_instance" "dev" {
   db_subnet_group_name   = aws_db_subnet_group.kadai.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   publicly_accessible    = false
-  multi_az               = false
+  multi_az               = true
 
   backup_retention_period = 7
   backup_window           = "18:00-19:00"
